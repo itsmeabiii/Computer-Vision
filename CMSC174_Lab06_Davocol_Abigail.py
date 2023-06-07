@@ -18,12 +18,11 @@ def bg_subtractor(subtractor):
 
     erode_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     open_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
     
     cap = cv2.VideoCapture('clock.mp4')
     success, frame = cap.read()
     while success:
-
         fg_mask = bg_subtractor.apply(frame)
 
         _, thresh = cv2.threshold(fg_mask, 244, 255, cv2.THRESH_BINARY)
@@ -31,7 +30,6 @@ def bg_subtractor(subtractor):
         cv2.morphologyEx(thresh,cv2.MORPH_OPEN, open_kernel,iterations=2)
         cv2.dilate(thresh, dilate_kernel, thresh, iterations=2)
 
-        
         contours, hier = cv2.findContours(thresh, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             if cv2.contourArea(c) > 500:
@@ -40,7 +38,10 @@ def bg_subtractor(subtractor):
                 box = np.intp(box)
 
                 cv2.drawContours(frame, [box], 0, (0, 0, 255), 2)
-
+        
+        fg_mask = cv2.resize(fg_mask,(600,350))
+        frame = cv2.resize(frame,(600,350))
+        thresh = cv2.resize(thresh,(600,350))
         cv2.imshow(subtractor, fg_mask)
         cv2.imshow('thresh', thresh)
         cv2.imshow('detection', frame)
